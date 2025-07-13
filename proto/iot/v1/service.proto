@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package iot.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service DeviceService {
+  rpc RecordMetric(RecordMetricRequest) returns (RecordMetricResponse) {
+    option (google.api.http) = {
+      post: "/devices/{device_id}/metrics"
+      body: "*"
+    };
+  }
+
+  rpc ConfigureDevice(ConfigureDeviceRequest) returns (ConfigureDeviceResponse) {
+    option (google.api.http) = {
+      post: "/devices/{device_id}/config"
+      body: "*"
+    };
+  }
+
+  rpc GetDeviceAlerts(GetDeviceAlertsRequest) returns (GetDeviceAlertsResponse) {
+    option (google.api.http) = {
+      get: "/devices/{device_id}/alerts"
+      response_body: "alerts"
+    };
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message RecordMetricRequest {
+  string device_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  double temperature = 3;
+  int32 battery = 4;
+}
+
+message RecordMetricResponse {}
+
+message ConfigureDeviceRequest {
+  string device_id = 1 [json_name = "device_id"];
+  double temperature_threshold = 2 [json_name = "temperature_threshold"];
+  int32 battery_threshold = 3 [json_name = "battery_threshold"];
+}
+
+message ConfigureDeviceResponse {}
+
+message GetDeviceAlertsRequest {
+  string device_id = 1 [json_name = "device_id"];
+  optional Timeframe timeframe = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message GetDeviceAlertsResponse {
+  repeated Alert alerts = 1;
+  string next_page_token = 2;
+}
+
+message PageToken {
+  int64 offset_id = 1;
+  google.protobuf.Timestamp offset_time = 2;
+}
+
+message Timeframe {
+  optional google.protobuf.Timestamp start = 1;
+  optional google.protobuf.Timestamp end = 2;
+}
+
+message Alert {
+  string device_id = 1 [json_name = "device_id"];
+  google.protobuf.Timestamp timestamp = 2;
+  string reason = 3;
+}
