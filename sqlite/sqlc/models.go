@@ -8,6 +8,7 @@ type Alert struct {
 	ID        int64
 	DeviceID  string
 	Reason    string
+	Desc      string
 	Timestamp int64
 }
 

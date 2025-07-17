@@ -7,7 +7,7 @@ CREATE TABLE configs
 
 CREATE TABLE metrics
 (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id   TEXT    NOT NULL,
     temperature REAL    NOT NULL,
     battery     INTEGER NOT NULL,
@@ -16,8 +16,9 @@ CREATE TABLE metrics
 
 CREATE TABLE alerts
 (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id TEXT    NOT NULL,
     reason    TEXT    NOT NULL,
+    desc      TEXT    NOT NULL,
     timestamp INTEGER NOT NULL -- unix
 );

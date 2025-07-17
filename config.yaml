@@ -1,0 +1,5 @@
+logger:
+  level: info
+  structured: false
+port: 8080
+sqliteDir: ./data/

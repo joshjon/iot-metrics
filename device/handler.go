@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"time"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/joshjon/iot-metrics/log"
 	"github.com/joshjon/iot-metrics/proto/gen/iot/v1"
@@ -43,8 +43,6 @@ func (s *Service) ConfigureDevice(
 		return nil, err
 	}
 
-	msg.TemperatureThreshold = truncate2f(msg.TemperatureThreshold)
-
 	cfg := Config{
 		TemperatureThreshold: msg.TemperatureThreshold,
 		BatteryThreshold:     msg.BatteryThreshold,
@@ -71,7 +69,6 @@ func (s *Service) RecordMetric(
 		return nil, err
 	}
 
-	msg.Temperature = truncate2f(msg.Temperature)
 	timestamp := msg.Timestamp.AsTime().UTC()
 	logger := s.logger.With("device_id", msg.DeviceId, "timestamp", timestamp.Format(time.RFC3339))
 
@@ -95,16 +92,17 @@ func (s *Service) RecordMetric(
 	}
 
 	if msg.Temperature > cfg.TemperatureThreshold {
-		logger.Info("[alert] temperature exceeded threshold",
+		alert := Alert{
+			Reason: AlertReasonTemperatureHigh,
+			Desc:   tempHighDesc(msg.Temperature, cfg.TemperatureThreshold),
+			Time:   timestamp,
+		}
+		logger.Info("alert triggered",
+			"reason", alert.Reason,
 			"temperature", msg.Temperature,
 			"threshold", cfg.TemperatureThreshold,
 			"difference", fmt.Sprintf("%.2f", msg.Temperature-cfg.TemperatureThreshold),
 		)
-		reason := tempHighReason(msg.Temperature, cfg.TemperatureThreshold)
-		alert := Alert{
-			Reason: reason,
-			Time:   timestamp,
-		}
 		err = s.repo.SaveDeviceAlert(ctx, msg.DeviceId, alert)
 		if err != nil {
 			return nil, fmt.Errorf("save temperature alert: %w", err)
@@ -112,15 +110,17 @@ func (s *Service) RecordMetric(
 	}
 
 	if msg.Battery < cfg.BatteryThreshold {
-		logger.Info("[alert] battery dropped below threshold",
+		alert := Alert{
+			Reason: AlertReasonBatteryLow,
+			Desc:   batteryLowDesc(msg.Battery, cfg.BatteryThreshold),
+			Time:   timestamp,
+		}
+		logger.Info("alert triggered",
+			"reason", alert.Reason,
 			"battery", msg.Battery,
 			"threshold", cfg.BatteryThreshold,
 			"difference", cfg.BatteryThreshold-msg.Battery,
 		)
-		alert := Alert{
-			Reason: batteryLowReason(msg.Battery, cfg.BatteryThreshold),
-			Time:   timestamp,
-		}
 		err = s.repo.SaveDeviceAlert(ctx, msg.DeviceId, alert)
 		if err != nil {
 			return nil, fmt.Errorf("save battery alert: %w", err)
@@ -147,9 +147,11 @@ func (s *Service) GetDeviceAlerts(
 
 	var pageTkn *RepositoryPageToken
 	if req.Msg.PageToken != "" {
-		dec, err := decodePageToken(req.Msg.PageToken)
+		dec, err := decodePageToken(req.Msg.PageToken, func(tkn *iotv1.PageToken) bool {
+			return tkn.DeviceId == req.Msg.DeviceId && proto.Equal(tkn.Timeframe, req.Msg.Timeframe)
+		})
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid page token: %w", err))
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page token"))
 		}
 		pageTkn = &dec
 	}
@@ -170,7 +172,10 @@ func (s *Service) GetDeviceAlerts(
 
 	var nextPageTkn string
 	if page.NextPageToken != nil {
-		if nextPageTkn, err = encodePageToken(*page.NextPageToken); err != nil {
+		if nextPageTkn, err = encodePageToken(*page.NextPageToken, func(tkn *iotv1.PageToken) {
+			tkn.DeviceId = req.Msg.DeviceId
+			tkn.Timeframe = req.Msg.Timeframe
+		}); err != nil {
 			return nil, err
 		}
 	}
@@ -181,11 +186,11 @@ func (s *Service) GetDeviceAlerts(
 	}), nil
 }
 
-func tempHighReason(temp float64, threshold float64) string {
-	return fmt.Sprintf("Temperature (%f) exceeded configured threshold (%f)", temp, threshold)
+func tempHighDesc(temp float64, threshold float64) string {
+	return fmt.Sprintf("Temperature (%.2f) exceeded configured threshold (%.2f)", temp, threshold)
 }
 
-func batteryLowReason(battery int32, threshold int32) string {
+func batteryLowDesc(battery int32, threshold int32) string {
 	return fmt.Sprintf("Battery (%d) dropped below configured threshold (%d)", battery, threshold)
 }
 
@@ -200,12 +205,6 @@ func unmarshalTimeframe(tfpb *iotv1.Timeframe) Timeframe {
 		}
 	}
 	return timeframe
-}
-
-// truncate2f truncates a float to 2 decimal places.
-func truncate2f(val float64) float64 {
-	scale := math.Pow(10, float64(2))
-	return math.Trunc(val*scale) / scale
 }
 
 func ptr[T any](v T) *T {

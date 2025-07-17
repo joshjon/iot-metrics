@@ -39,8 +39,8 @@ FROM configs
 WHERE device_id = ?;
 
 -- name: SaveDeviceAlert :exec
-INSERT INTO alerts (device_id, reason, timestamp)
-VALUES (?, ?, ?);
+INSERT INTO alerts (device_id, reason, desc, timestamp)
+VALUES (?, ?, ?, ?);
 
 -- name: GetDeviceAlerts :many
 SELECT *

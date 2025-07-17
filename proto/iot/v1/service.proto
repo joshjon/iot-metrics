@@ -21,10 +21,7 @@ service DeviceService {
   }
 
   rpc GetDeviceAlerts(GetDeviceAlertsRequest) returns (GetDeviceAlertsResponse) {
-    option (google.api.http) = {
-      get: "/devices/{device_id}/alerts"
-      response_body: "alerts"
-    };
+    option (google.api.http).get = "/devices/{device_id}/alerts";
     option idempotency_level = NO_SIDE_EFFECTS;
   }
 }
@@ -61,6 +58,9 @@ message GetDeviceAlertsResponse {
 message PageToken {
   int64 offset_id = 1;
   google.protobuf.Timestamp offset_time = 2;
+
+  string device_id = 3;
+  optional Timeframe timeframe = 4;
 }
 
 message Timeframe {
@@ -69,7 +69,13 @@ message Timeframe {
 }
 
 message Alert {
-  string device_id = 1 [json_name = "device_id"];
-  google.protobuf.Timestamp timestamp = 2;
-  string reason = 3;
+  google.protobuf.Timestamp timestamp = 1;
+  Reason reason = 2;
+  string description = 3;
+
+  enum Reason {
+    REASON_UNSPECIFIED = 0;
+    REASON_TEMPERATURE_HIGH = 1;
+    REASON_BATTERY_LOW = 2;
+  }
 }

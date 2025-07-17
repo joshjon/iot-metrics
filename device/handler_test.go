@@ -197,14 +197,16 @@ func TestHandler_RecordMetric(t *testing.T) {
 			if tt.wantTempAlert {
 				wantAlertsLen++
 				assert.Contains(t, gotAlerts, Alert{
-					Reason: tempHighReason(req.Temperature, tt.deviceCfg.TemperatureThreshold),
+					Reason: AlertReasonTemperatureHigh,
+					Desc:   tempHighDesc(req.Temperature, tt.deviceCfg.TemperatureThreshold),
 					Time:   req.Timestamp.AsTime(),
 				})
 			}
 			if tt.wantBatteryAlert {
 				wantAlertsLen++
 				assert.Contains(t, gotAlerts, Alert{
-					Reason: batteryLowReason(req.Battery, tt.deviceCfg.BatteryThreshold),
+					Reason: AlertReasonBatteryLow,
+					Desc:   batteryLowDesc(req.Battery, tt.deviceCfg.BatteryThreshold),
 					Time:   req.Timestamp.AsTime(),
 				})
 			}
@@ -298,13 +300,6 @@ func TestHandler_RecordMetric_requestValidation(t *testing.T) {
 func TestHandler_GetDeviceAlerts(t *testing.T) {
 	ctx := t.Context()
 
-	ptkn := RepositoryPageToken{
-		LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
-		LastID:   ptr[int64](1),
-	}
-	encPtkn, err := encodePageToken(ptkn)
-	require.NoError(t, err)
-
 	wantTimeframe := Timeframe{
 		Start: ptr(time.Now().Add(-time.Minute).UTC()),
 		End:   ptr(time.Now().UTC()),
@@ -316,13 +311,17 @@ func TestHandler_GetDeviceAlerts(t *testing.T) {
 			Start: timestamppb.New(*wantTimeframe.Start),
 			End:   timestamppb.New(*wantTimeframe.End),
 		},
-		PageSize:  10,
-		PageToken: encPtkn,
+		PageSize: 10,
 	}
+	ptkn := RepositoryPageToken{
+		LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
+		LastID:   ptr[int64](1),
+	}
+	req.PageToken = newEncodedPageToken(t, req.DeviceId, req.Timeframe, ptkn)
 
 	alerts := []Alert{
-		{Reason: tempHighReason(5.56, 5.55), Time: time.Now()},
-		{Reason: batteryLowReason(5, 6), Time: time.Now()},
+		{Reason: AlertReasonTemperatureHigh, Desc: tempHighDesc(5.56, 5.55), Time: time.Now()},
+		{Reason: AlertReasonBatteryLow, Desc: batteryLowDesc(5, 6), Time: time.Now()},
 	}
 	wantAlerts := make([]*iotv1.Alert, len(alerts))
 	for i, alert := range alerts {
@@ -333,8 +332,7 @@ func TestHandler_GetDeviceAlerts(t *testing.T) {
 		LastTime: ptr(time.Now().Add(-20 * time.Second)),
 		LastID:   ptr[int64](2),
 	}
-	wantNextPageTkn, err := encodePageToken(nextPageTkn)
-	require.NoError(t, err)
+	wantNextPageTkn := newEncodedPageToken(t, req.DeviceId, req.Timeframe, nextPageTkn)
 
 	r := &RepositoryMock{
 		GetDeviceAlertsFunc: func(ctx context.Context, deviceID string, timeframe Timeframe, pageOpts RepositoryPageOptions) (RepositoryPage[Alert], error) {
@@ -363,21 +361,18 @@ func TestHandler_GetDeviceAlerts(t *testing.T) {
 }
 
 func TestHandler_GetDeviceAlerts_requestValidation(t *testing.T) {
-	encPtkn, err := encodePageToken(RepositoryPageToken{
-		LastTime: ptr(time.Now().Add(-10 * time.Second)),
-		LastID:   ptr[int64](1),
-	})
-	require.NoError(t, err)
-
 	validReq := &iotv1.GetDeviceAlertsRequest{
 		DeviceId: "foo",
 		Timeframe: &iotv1.Timeframe{
 			Start: timestamppb.New(time.Now().Add(-time.Minute)),
 			End:   timestamppb.New(time.Now()),
 		},
-		PageSize:  10,
-		PageToken: encPtkn,
+		PageSize: 10,
 	}
+	validReq.PageToken = newEncodedPageToken(t, validReq.DeviceId, validReq.Timeframe, RepositoryPageToken{
+		LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
+		LastID:   ptr[int64](1),
+	})
 
 	tests := []struct {
 		name      string
@@ -429,7 +424,44 @@ func TestHandler_GetDeviceAlerts_requestValidation(t *testing.T) {
 	}
 }
 
+func TestHandler_GetDeviceAlerts_incompatiblePageToken(t *testing.T) {
+	ctx := t.Context()
+
+	req := &iotv1.GetDeviceAlertsRequest{
+		DeviceId: "foo",
+		Timeframe: &iotv1.Timeframe{
+			Start: timestamppb.New(time.Now().Add(-time.Minute).UTC()),
+			End:   timestamppb.New(time.Now().UTC()),
+		},
+		PageSize: 10,
+	}
+	ptkn := RepositoryPageToken{
+		LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
+		LastID:   ptr[int64](1),
+	}
+	// create token with mismatched request values
+	encPtkn, err := encodePageToken(ptkn, func(tkn *iotv1.PageToken) {
+		tkn.DeviceId = "random-device-id"
+		tkn.Timeframe = proto.CloneOf(req.Timeframe)
+		tkn.Timeframe.Start = timestamppb.New(time.Now().Add(-time.Hour))
+	})
+	require.NoError(t, err)
+	req.PageToken = encPtkn
+
+	h := NewHandler(nil, log.NewLogger())
+
+	res, err := h.GetDeviceAlerts(ctx, connect.NewRequest(req))
+	require.Error(t, err)
+	assert.Nil(t, res)
+
+	var cerr *connect.Error
+	require.ErrorAs(t, err, &cerr)
+
+	assert.Equal(t, connect.CodeInvalidArgument, cerr.Code())
+}
+
 func assertFieldViolationErr(t *testing.T, err error, field string, numViolations int) {
+	t.Helper()
 	var cerr *connect.Error
 	require.ErrorAs(t, err, &cerr)
 
@@ -451,4 +483,14 @@ func assertFieldViolationErr(t *testing.T, err error, field string, numViolation
 		}
 	}
 	assert.Equal(t, numViolations, gotCount)
+}
+
+func newEncodedPageToken(t *testing.T, deviceID string, timeframe *iotv1.Timeframe, rTkn RepositoryPageToken) string {
+	t.Helper()
+	encPtkn, err := encodePageToken(rTkn, func(tkn *iotv1.PageToken) {
+		tkn.DeviceId = deviceID
+		tkn.Timeframe = timeframe
+	})
+	require.NoError(t, err)
+	return encPtkn
 }

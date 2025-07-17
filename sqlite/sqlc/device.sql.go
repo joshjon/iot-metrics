@@ -10,7 +10,7 @@ import (
 )
 
 const getDeviceAlerts = `-- name: GetDeviceAlerts :many
-SELECT id, device_id, reason, timestamp
+SELECT id, device_id, reason, "desc", timestamp
 FROM alerts
 WHERE device_id = ?1
   -- time window
@@ -63,6 +63,7 @@ func (q *Queries) GetDeviceAlerts(ctx context.Context, arg GetDeviceAlertsParams
 			&i.ID,
 			&i.DeviceID,
 			&i.Reason,
+			&i.Desc,
 			&i.Timestamp,
 		); err != nil {
 			return nil, err
@@ -167,18 +168,24 @@ func (q *Queries) GetDeviceMetrics(ctx context.Context, arg GetDeviceMetricsPara
 }
 
 const saveDeviceAlert = `-- name: SaveDeviceAlert :exec
-INSERT INTO alerts (device_id, reason, timestamp)
-VALUES (?, ?, ?)
+INSERT INTO alerts (device_id, reason, desc, timestamp)
+VALUES (?, ?, ?, ?)
 `
 
 type SaveDeviceAlertParams struct {
 	DeviceID  string
 	Reason    string
+	Desc      string
 	Timestamp int64
 }
 
 func (q *Queries) SaveDeviceAlert(ctx context.Context, arg SaveDeviceAlertParams) error {
-	_, err := q.db.ExecContext(ctx, saveDeviceAlert, arg.DeviceID, arg.Reason, arg.Timestamp)
+	_, err := q.db.ExecContext(ctx, saveDeviceAlert,
+		arg.DeviceID,
+		arg.Reason,
+		arg.Desc,
+		arg.Timestamp,
+	)
 	return err
 }
 

@@ -2,6 +2,7 @@ package device
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -9,8 +10,11 @@ import (
 	iotv1 "github.com/joshjon/iot-metrics/proto/gen/iot/v1"
 )
 
-func encodePageToken(tkn RepositoryPageToken) (string, error) {
+func encodePageToken(tkn RepositoryPageToken, inject func(tkn *iotv1.PageToken)) (string, error) {
 	tknpb := &iotv1.PageToken{}
+	if inject != nil {
+		inject(tknpb)
+	}
 	if tkn.LastID != nil {
 		tknpb.OffsetId = *tkn.LastID
 	}
@@ -26,7 +30,7 @@ func encodePageToken(tkn RepositoryPageToken) (string, error) {
 	return enc, nil
 }
 
-func decodePageToken(tkn string) (RepositoryPageToken, error) {
+func decodePageToken(tkn string, isValid func(tkn *iotv1.PageToken) bool) (RepositoryPageToken, error) {
 	dec, err := base64.RawURLEncoding.DecodeString(tkn)
 	if err != nil {
 		return RepositoryPageToken{}, err
@@ -35,6 +39,10 @@ func decodePageToken(tkn string) (RepositoryPageToken, error) {
 	var tknpb iotv1.PageToken
 	if err = proto.Unmarshal(dec, &tknpb); err != nil {
 		return RepositoryPageToken{}, err
+	}
+
+	if isValid != nil && !isValid(&tknpb) {
+		return RepositoryPageToken{}, errors.New("incompatible token")
 	}
 
 	return RepositoryPageToken{

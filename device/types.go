@@ -20,15 +20,34 @@ type Metric struct {
 }
 
 type Alert struct {
-	Reason string
+	Reason AlertReason
+	Desc   string
 	Time   time.Time
 }
 
 func (a Alert) Proto() *iotv1.Alert {
 	return &iotv1.Alert{
-		Reason:    a.Reason,
-		Timestamp: timestamppb.New(a.Time),
+		Reason:      a.Reason.Proto(),
+		Description: a.Desc,
+		Timestamp:   timestamppb.New(a.Time),
 	}
+}
+
+const (
+	AlertReasonTemperatureHigh AlertReason = "TEMPERATURE_HIGH"
+	AlertReasonBatteryLow      AlertReason = "BATTERY_LOW"
+)
+
+type AlertReason string
+
+func (r AlertReason) Proto() iotv1.Alert_Reason {
+	switch r {
+	case AlertReasonTemperatureHigh:
+		return iotv1.Alert_REASON_TEMPERATURE_HIGH
+	case AlertReasonBatteryLow:
+		return iotv1.Alert_REASON_BATTERY_LOW
+	}
+	return iotv1.Alert_REASON_UNSPECIFIED
 }
 
 type Timeframe struct {

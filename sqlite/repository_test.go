@@ -107,7 +107,8 @@ func TestDeviceRepository_SaveGetDeviceAlerts(t *testing.T) {
 
 	for i := 0; i < count; i++ {
 		alert := device.Alert{
-			Reason: "reason " + strconv.Itoa(i),
+			Reason: device.AlertReasonBatteryLow,
+			Desc:   "desc " + strconv.Itoa(i),
 			Time:   middle,
 		}
 		// first and last outside timeframe

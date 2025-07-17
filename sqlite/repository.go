@@ -109,7 +109,8 @@ func (d *DeviceRepository) GetDeviceConfig(ctx context.Context, deviceID string)
 func (d *DeviceRepository) SaveDeviceAlert(ctx context.Context, deviceID string, alert device.Alert) error {
 	return d.querier.SaveDeviceAlert(ctx, sqlc.SaveDeviceAlertParams{
 		DeviceID:  deviceID,
-		Reason:    alert.Reason,
+		Reason:    string(alert.Reason),
+		Desc:      alert.Desc,
 		Timestamp: alert.Time.Unix(),
 	})
 }
@@ -155,7 +156,8 @@ func (d *DeviceRepository) GetDeviceAlerts(
 	alerts := make([]device.Alert, len(rows))
 	for i, row := range rows {
 		alerts[i] = device.Alert{
-			Reason: row.Reason,
+			Reason: device.AlertReason(row.Reason),
+			Desc:   row.Desc,
 			Time:   time.Unix(row.Timestamp, 0).UTC(),
 		}
 	}

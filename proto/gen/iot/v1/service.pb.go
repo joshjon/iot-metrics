@@ -23,6 +23,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Alert_Reason int32
+
+const (
+	Alert_REASON_UNSPECIFIED      Alert_Reason = 0
+	Alert_REASON_TEMPERATURE_HIGH Alert_Reason = 1
+	Alert_REASON_BATTERY_LOW      Alert_Reason = 2
+)
+
+// Enum value maps for Alert_Reason.
+var (
+	Alert_Reason_name = map[int32]string{
+		0: "REASON_UNSPECIFIED",
+		1: "REASON_TEMPERATURE_HIGH",
+		2: "REASON_BATTERY_LOW",
+	}
+	Alert_Reason_value = map[string]int32{
+		"REASON_UNSPECIFIED":      0,
+		"REASON_TEMPERATURE_HIGH": 1,
+		"REASON_BATTERY_LOW":      2,
+	}
+)
+
+func (x Alert_Reason) Enum() *Alert_Reason {
+	p := new(Alert_Reason)
+	*p = x
+	return p
+}
+
+func (x Alert_Reason) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Alert_Reason) Descriptor() protoreflect.EnumDescriptor {
+	return file_iot_v1_service_proto_enumTypes[0].Descriptor()
+}
+
+func (Alert_Reason) Type() protoreflect.EnumType {
+	return &file_iot_v1_service_proto_enumTypes[0]
+}
+
+func (x Alert_Reason) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Alert_Reason.Descriptor instead.
+func (Alert_Reason) EnumDescriptor() ([]byte, []int) {
+	return file_iot_v1_service_proto_rawDescGZIP(), []int{8, 0}
+}
+
 type RecordMetricRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
@@ -347,6 +396,8 @@ type PageToken struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OffsetId      int64                  `protobuf:"varint,1,opt,name=offset_id,json=offsetId,proto3" json:"offset_id,omitempty"`
 	OffsetTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=offset_time,json=offsetTime,proto3" json:"offset_time,omitempty"`
+	DeviceId      string                 `protobuf:"bytes,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Timeframe     *Timeframe             `protobuf:"bytes,4,opt,name=timeframe,proto3,oneof" json:"timeframe,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -391,6 +442,20 @@ func (x *PageToken) GetOffsetId() int64 {
 func (x *PageToken) GetOffsetTime() *timestamppb.Timestamp {
 	if x != nil {
 		return x.OffsetTime
+	}
+	return nil
+}
+
+func (x *PageToken) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *PageToken) GetTimeframe() *Timeframe {
+	if x != nil {
+		return x.Timeframe
 	}
 	return nil
 }
@@ -449,9 +514,9 @@ func (x *Timeframe) GetEnd() *timestamppb.Timestamp {
 
 type Alert struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,proto3" json:"device_id,omitempty"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Reason        Alert_Reason           `protobuf:"varint,2,opt,name=reason,proto3,enum=iot.v1.Alert_Reason" json:"reason,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -486,13 +551,6 @@ func (*Alert) Descriptor() ([]byte, []int) {
 	return file_iot_v1_service_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *Alert) GetDeviceId() string {
-	if x != nil {
-		return x.DeviceId
-	}
-	return ""
-}
-
 func (x *Alert) GetTimestamp() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Timestamp
@@ -500,9 +558,16 @@ func (x *Alert) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Alert) GetReason() string {
+func (x *Alert) GetReason() Alert_Reason {
 	if x != nil {
 		return x.Reason
+	}
+	return Alert_REASON_UNSPECIFIED
+}
+
+func (x *Alert) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -533,24 +598,32 @@ const file_iot_v1_service_proto_rawDesc = "" +
 	"_timeframe\"h\n" +
 	"\x17GetDeviceAlertsResponse\x12%\n" +
 	"\x06alerts\x18\x01 \x03(\v2\r.iot.v1.AlertR\x06alerts\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"e\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xc6\x01\n" +
 	"\tPageToken\x12\x1b\n" +
 	"\toffset_id\x18\x01 \x01(\x03R\boffsetId\x12;\n" +
 	"\voffset_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"offsetTime\"\x87\x01\n" +
+	"offsetTime\x12\x1b\n" +
+	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\x124\n" +
+	"\ttimeframe\x18\x04 \x01(\v2\x11.iot.v1.TimeframeH\x00R\ttimeframe\x88\x01\x01B\f\n" +
+	"\n" +
+	"_timeframe\"\x87\x01\n" +
 	"\tTimeframe\x125\n" +
 	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\x05start\x88\x01\x01\x121\n" +
 	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x03end\x88\x01\x01B\b\n" +
 	"\x06_startB\x06\n" +
-	"\x04_end\"w\n" +
-	"\x05Alert\x12\x1c\n" +
-	"\tdevice_id\x18\x01 \x01(\tR\tdevice_id\x128\n" +
-	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x16\n" +
-	"\x06reason\x18\x03 \x01(\tR\x06reason2\x84\x03\n" +
+	"\x04_end\"\xe8\x01\n" +
+	"\x05Alert\x128\n" +
+	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12,\n" +
+	"\x06reason\x18\x02 \x01(\x0e2\x14.iot.v1.Alert.ReasonR\x06reason\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"U\n" +
+	"\x06Reason\x12\x16\n" +
+	"\x12REASON_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17REASON_TEMPERATURE_HIGH\x10\x01\x12\x16\n" +
+	"\x12REASON_BATTERY_LOW\x10\x022\xfb\x02\n" +
 	"\rDeviceService\x12r\n" +
 	"\fRecordMetric\x12\x1b.iot.v1.RecordMetricRequest\x1a\x1c.iot.v1.RecordMetricResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/devices/{device_id}/metrics\x12z\n" +
-	"\x0fConfigureDevice\x12\x1e.iot.v1.ConfigureDeviceRequest\x1a\x1f.iot.v1.ConfigureDeviceResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/devices/{device_id}/config\x12\x82\x01\n" +
-	"\x0fGetDeviceAlerts\x12\x1e.iot.v1.GetDeviceAlertsRequest\x1a\x1f.iot.v1.GetDeviceAlertsResponse\".\x82\xd3\xe4\x93\x02%b\x06alerts\x12\x1b/devices/{device_id}/alerts\x90\x02\x01B\x8a\x01\n" +
+	"\x0fConfigureDevice\x12\x1e.iot.v1.ConfigureDeviceRequest\x1a\x1f.iot.v1.ConfigureDeviceResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/devices/{device_id}/config\x12z\n" +
+	"\x0fGetDeviceAlerts\x12\x1e.iot.v1.GetDeviceAlertsRequest\x1a\x1f.iot.v1.GetDeviceAlertsResponse\"&\x82\xd3\xe4\x93\x02\x1d\x12\x1b/devices/{device_id}/alerts\x90\x02\x01B\x8a\x01\n" +
 	"\n" +
 	"com.iot.v1B\fServiceProtoP\x01Z5github.com/joshjon/iot-metrics/proto/gen/iot/v1;iotv1\xa2\x02\x03IXX\xaa\x02\x06Iot.V1\xca\x02\x06Iot\\V1\xe2\x02\x12Iot\\V1\\GPBMetadata\xea\x02\aIot::V1b\x06proto3"
 
@@ -566,38 +639,42 @@ func file_iot_v1_service_proto_rawDescGZIP() []byte {
 	return file_iot_v1_service_proto_rawDescData
 }
 
+var file_iot_v1_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_iot_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_iot_v1_service_proto_goTypes = []any{
-	(*RecordMetricRequest)(nil),     // 0: iot.v1.RecordMetricRequest
-	(*RecordMetricResponse)(nil),    // 1: iot.v1.RecordMetricResponse
-	(*ConfigureDeviceRequest)(nil),  // 2: iot.v1.ConfigureDeviceRequest
-	(*ConfigureDeviceResponse)(nil), // 3: iot.v1.ConfigureDeviceResponse
-	(*GetDeviceAlertsRequest)(nil),  // 4: iot.v1.GetDeviceAlertsRequest
-	(*GetDeviceAlertsResponse)(nil), // 5: iot.v1.GetDeviceAlertsResponse
-	(*PageToken)(nil),               // 6: iot.v1.PageToken
-	(*Timeframe)(nil),               // 7: iot.v1.Timeframe
-	(*Alert)(nil),                   // 8: iot.v1.Alert
-	(*timestamppb.Timestamp)(nil),   // 9: google.protobuf.Timestamp
+	(Alert_Reason)(0),               // 0: iot.v1.Alert.Reason
+	(*RecordMetricRequest)(nil),     // 1: iot.v1.RecordMetricRequest
+	(*RecordMetricResponse)(nil),    // 2: iot.v1.RecordMetricResponse
+	(*ConfigureDeviceRequest)(nil),  // 3: iot.v1.ConfigureDeviceRequest
+	(*ConfigureDeviceResponse)(nil), // 4: iot.v1.ConfigureDeviceResponse
+	(*GetDeviceAlertsRequest)(nil),  // 5: iot.v1.GetDeviceAlertsRequest
+	(*GetDeviceAlertsResponse)(nil), // 6: iot.v1.GetDeviceAlertsResponse
+	(*PageToken)(nil),               // 7: iot.v1.PageToken
+	(*Timeframe)(nil),               // 8: iot.v1.Timeframe
+	(*Alert)(nil),                   // 9: iot.v1.Alert
+	(*timestamppb.Timestamp)(nil),   // 10: google.protobuf.Timestamp
 }
 var file_iot_v1_service_proto_depIdxs = []int32{
-	9,  // 0: iot.v1.RecordMetricRequest.timestamp:type_name -> google.protobuf.Timestamp
-	7,  // 1: iot.v1.GetDeviceAlertsRequest.timeframe:type_name -> iot.v1.Timeframe
-	8,  // 2: iot.v1.GetDeviceAlertsResponse.alerts:type_name -> iot.v1.Alert
-	9,  // 3: iot.v1.PageToken.offset_time:type_name -> google.protobuf.Timestamp
-	9,  // 4: iot.v1.Timeframe.start:type_name -> google.protobuf.Timestamp
-	9,  // 5: iot.v1.Timeframe.end:type_name -> google.protobuf.Timestamp
-	9,  // 6: iot.v1.Alert.timestamp:type_name -> google.protobuf.Timestamp
-	0,  // 7: iot.v1.DeviceService.RecordMetric:input_type -> iot.v1.RecordMetricRequest
-	2,  // 8: iot.v1.DeviceService.ConfigureDevice:input_type -> iot.v1.ConfigureDeviceRequest
-	4,  // 9: iot.v1.DeviceService.GetDeviceAlerts:input_type -> iot.v1.GetDeviceAlertsRequest
-	1,  // 10: iot.v1.DeviceService.RecordMetric:output_type -> iot.v1.RecordMetricResponse
-	3,  // 11: iot.v1.DeviceService.ConfigureDevice:output_type -> iot.v1.ConfigureDeviceResponse
-	5,  // 12: iot.v1.DeviceService.GetDeviceAlerts:output_type -> iot.v1.GetDeviceAlertsResponse
-	10, // [10:13] is the sub-list for method output_type
-	7,  // [7:10] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	10, // 0: iot.v1.RecordMetricRequest.timestamp:type_name -> google.protobuf.Timestamp
+	8,  // 1: iot.v1.GetDeviceAlertsRequest.timeframe:type_name -> iot.v1.Timeframe
+	9,  // 2: iot.v1.GetDeviceAlertsResponse.alerts:type_name -> iot.v1.Alert
+	10, // 3: iot.v1.PageToken.offset_time:type_name -> google.protobuf.Timestamp
+	8,  // 4: iot.v1.PageToken.timeframe:type_name -> iot.v1.Timeframe
+	10, // 5: iot.v1.Timeframe.start:type_name -> google.protobuf.Timestamp
+	10, // 6: iot.v1.Timeframe.end:type_name -> google.protobuf.Timestamp
+	10, // 7: iot.v1.Alert.timestamp:type_name -> google.protobuf.Timestamp
+	0,  // 8: iot.v1.Alert.reason:type_name -> iot.v1.Alert.Reason
+	1,  // 9: iot.v1.DeviceService.RecordMetric:input_type -> iot.v1.RecordMetricRequest
+	3,  // 10: iot.v1.DeviceService.ConfigureDevice:input_type -> iot.v1.ConfigureDeviceRequest
+	5,  // 11: iot.v1.DeviceService.GetDeviceAlerts:input_type -> iot.v1.GetDeviceAlertsRequest
+	2,  // 12: iot.v1.DeviceService.RecordMetric:output_type -> iot.v1.RecordMetricResponse
+	4,  // 13: iot.v1.DeviceService.ConfigureDevice:output_type -> iot.v1.ConfigureDeviceResponse
+	6,  // 14: iot.v1.DeviceService.GetDeviceAlerts:output_type -> iot.v1.GetDeviceAlertsResponse
+	12, // [12:15] is the sub-list for method output_type
+	9,  // [9:12] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_iot_v1_service_proto_init() }
@@ -606,19 +683,21 @@ func file_iot_v1_service_proto_init() {
 		return
 	}
 	file_iot_v1_service_proto_msgTypes[4].OneofWrappers = []any{}
+	file_iot_v1_service_proto_msgTypes[6].OneofWrappers = []any{}
 	file_iot_v1_service_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_iot_v1_service_proto_rawDesc), len(file_iot_v1_service_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_iot_v1_service_proto_goTypes,
 		DependencyIndexes: file_iot_v1_service_proto_depIdxs,
+		EnumInfos:         file_iot_v1_service_proto_enumTypes,
 		MessageInfos:      file_iot_v1_service_proto_msgTypes,
 	}.Build()
 	File_iot_v1_service_proto = out.File

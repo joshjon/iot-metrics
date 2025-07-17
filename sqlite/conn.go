@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 const (
@@ -43,7 +43,7 @@ func Open(ctx context.Context, opts ...OpenOption) (*sql.DB, error) {
 		file = strings.TrimSuffix(o.dir, "/") + "/" + file
 	}
 
-	db, err := sql.Open("sqlite3", "file:"+file+"?_journal_mode=WAL&_busy_timeout=5000")
+	db, err := sql.Open("sqlite", "file:"+file+"?_journal_mode=WAL&_busy_timeout=5000")
 	if err != nil {
 		return nil, err
 	}
