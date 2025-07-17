@@ -19,3 +19,9 @@ buf-lint: $(PROTO_FILES)
 buf-gen: buf-dep-update buf-format buf-lint $(PROTO_FILES)
 	rm -rf proto/gen/
 	docker run -v $$(pwd):/srv -w /srv bufbuild/buf:$(BUF_VERSION) generate
+
+# Sqlc
+
+.PHONY: sqlc-gen
+sqlc-gen:
+	go generate -x sqlite/sqlc_gen.go
