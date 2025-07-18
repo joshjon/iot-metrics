@@ -17,6 +17,7 @@ type repoErr string
 
 func (e repoErr) Error() string { return string(e) }
 
+// Repository defines the persistence layer for device data.
 type Repository interface {
 	UpsertDeviceConfig(ctx context.Context, deviceID string, config Config) error
 	SaveDeviceMetric(ctx context.Context, deviceID string, metric Metric) error
@@ -26,16 +27,20 @@ type Repository interface {
 	GetDeviceAlerts(ctx context.Context, deviceID string, timeframe Timeframe, pageOpts RepositoryPageOptions) (RepositoryPage[Alert], error)
 }
 
+// RepositoryPageOptions specifies pagination parameters when querying
+// time-series data from the repository.
 type RepositoryPageOptions struct {
 	Size  int
 	Token *RepositoryPageToken
 }
 
+// RepositoryPageToken represents a cursor used to paginate through time-series data.
 type RepositoryPageToken struct {
 	LastTime *time.Time
 	LastID   *int64
 }
 
+// RepositoryPage is a page of results along with a token to retrieve the next page.
 type RepositoryPage[T any] struct {
 	Items         []T
 	NextPageToken *RepositoryPageToken

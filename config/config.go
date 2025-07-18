@@ -11,10 +11,12 @@ import (
 	"github.com/joshjon/iot-metrics/log"
 )
 
+// Config holds application configuration loaded from environment variables
+// and/or a YAML file.
 type Config struct {
-	Logger          Logger     `yaml:"logger" envPrefix:"LOGGER_"`
 	Port            int        `yaml:"port" env:"PORT"`            // default: 8080
 	SQLiteDir       string     `yaml:"sqliteDir" env:"SQLITE_DIR"` // default: ./data/
+	Logger          Logger     `yaml:"logger" envPrefix:"LOGGER_"`
 	DeviceRateLimit *RateLimit `yaml:"deviceRateLimit" envPrefix:"DEVICE_RATE_LIMIT_"`
 }
 
@@ -37,16 +39,21 @@ func (c Config) Validate() []error {
 	return errs
 }
 
+// Logger defines settings for application log output.
 type Logger struct {
 	Level      string `yaml:"level" env:"LEVEL"`           // default: info
 	Structured bool   `yaml:"structured" env:"STRUCTURED"` // default: true
 }
 
+// RateLimit specifies token bucket parameters for rate limiting.
 type RateLimit struct {
-	Tokens  int `yaml:"tokens" env:"TOKENS"`
+	// Maximum number of requests allowed per interval.
+	Tokens int `yaml:"tokens" env:"TOKENS"`
+	// Duration of the interval in seconds.
 	Seconds int `yaml:"seconds" env:"SECONDS"`
 }
 
+// Load reads the application config from a YAML file and environment variables.
 func Load(configFile string) (*Config, error) {
 	cfg := Config{
 		Port:      8080,

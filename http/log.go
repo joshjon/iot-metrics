@@ -18,6 +18,7 @@ type Logger interface {
 	Log(ctx context.Context, level slog.Level, msg string, args ...any)
 }
 
+// NewEchoLogMiddleware returns an Echo middleware that logs handler requests.
 func NewEchoLogMiddleware(logger Logger) echo.MiddlewareFunc {
 	return middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
@@ -51,6 +52,7 @@ func NewEchoLogMiddleware(logger Logger) echo.MiddlewareFunc {
 	})
 }
 
+// NewConnectLogInterceptor returns a Connect interceptor that logs handler requests.
 func NewConnectLogInterceptor(logger Logger) connect.Interceptor {
 	return connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {

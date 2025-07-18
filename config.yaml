@@ -3,3 +3,7 @@ logger:
   structured: false
 port: 8080
 sqliteDir: ./data/
+# Uncomment below to enable per device rate limiting
+#deviceRateLimit:
+#  tokens: 5
+#  seconds: 1

@@ -7,7 +7,6 @@
 package iotv1
 
 import (
-	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -178,9 +177,9 @@ func (*RecordMetricResponse) Descriptor() ([]byte, []int) {
 
 type ConfigureDeviceRequest struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
-	DeviceId             string                 `protobuf:"bytes,1,opt,name=device_id,proto3" json:"device_id,omitempty"`
-	TemperatureThreshold float64                `protobuf:"fixed64,2,opt,name=temperature_threshold,proto3" json:"temperature_threshold,omitempty"`
-	BatteryThreshold     int32                  `protobuf:"varint,3,opt,name=battery_threshold,proto3" json:"battery_threshold,omitempty"`
+	DeviceId             string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	TemperatureThreshold float64                `protobuf:"fixed64,2,opt,name=temperature_threshold,json=temperatureThreshold,proto3" json:"temperature_threshold,omitempty"`
+	BatteryThreshold     int32                  `protobuf:"varint,3,opt,name=battery_threshold,json=batteryThreshold,proto3" json:"battery_threshold,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -274,7 +273,7 @@ func (*ConfigureDeviceResponse) Descriptor() ([]byte, []int) {
 
 type GetDeviceAlertsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,proto3" json:"device_id,omitempty"`
+	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
 	Timeframe     *Timeframe             `protobuf:"bytes,2,opt,name=timeframe,proto3,oneof" json:"timeframe,omitempty"`
 	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -508,20 +507,20 @@ var File_iot_v1_service_proto protoreflect.FileDescriptor
 
 const file_iot_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x14iot/v1/service.proto\x12\x06iot.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x01\n" +
+	"\x14iot/v1/service.proto\x12\x06iot.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x01\n" +
 	"\x13RecordMetricRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x128\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12 \n" +
 	"\vtemperature\x18\x03 \x01(\x01R\vtemperature\x12\x18\n" +
 	"\abattery\x18\x04 \x01(\x05R\abattery\"\x16\n" +
-	"\x14RecordMetricResponse\"\x9a\x01\n" +
-	"\x16ConfigureDeviceRequest\x12\x1c\n" +
-	"\tdevice_id\x18\x01 \x01(\tR\tdevice_id\x124\n" +
-	"\x15temperature_threshold\x18\x02 \x01(\x01R\x15temperature_threshold\x12,\n" +
-	"\x11battery_threshold\x18\x03 \x01(\x05R\x11battery_threshold\"\x19\n" +
-	"\x17ConfigureDeviceResponse\"\xb6\x01\n" +
-	"\x16GetDeviceAlertsRequest\x12\x1c\n" +
-	"\tdevice_id\x18\x01 \x01(\tR\tdevice_id\x124\n" +
+	"\x14RecordMetricResponse\"\x97\x01\n" +
+	"\x16ConfigureDeviceRequest\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x123\n" +
+	"\x15temperature_threshold\x18\x02 \x01(\x01R\x14temperatureThreshold\x12+\n" +
+	"\x11battery_threshold\x18\x03 \x01(\x05R\x10batteryThreshold\"\x19\n" +
+	"\x17ConfigureDeviceResponse\"\xb5\x01\n" +
+	"\x16GetDeviceAlertsRequest\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x124\n" +
 	"\ttimeframe\x18\x02 \x01(\v2\x11.iot.v1.TimeframeH\x00R\ttimeframe\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -543,11 +542,11 @@ const file_iot_v1_service_proto_rawDesc = "" +
 	"\x06Reason\x12\x16\n" +
 	"\x12REASON_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17REASON_TEMPERATURE_HIGH\x10\x01\x12\x16\n" +
-	"\x12REASON_BATTERY_LOW\x10\x022\xfb\x02\n" +
-	"\rDeviceService\x12r\n" +
-	"\fRecordMetric\x12\x1b.iot.v1.RecordMetricRequest\x1a\x1c.iot.v1.RecordMetricResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/devices/{device_id}/metrics\x12z\n" +
-	"\x0fConfigureDevice\x12\x1e.iot.v1.ConfigureDeviceRequest\x1a\x1f.iot.v1.ConfigureDeviceResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/devices/{device_id}/config\x12z\n" +
-	"\x0fGetDeviceAlerts\x12\x1e.iot.v1.GetDeviceAlertsRequest\x1a\x1f.iot.v1.GetDeviceAlertsResponse\"&\x82\xd3\xe4\x93\x02\x1d\x12\x1b/devices/{device_id}/alerts\x90\x02\x01B\x8a\x01\n" +
+	"\x12REASON_BATTERY_LOW\x10\x022\x88\x02\n" +
+	"\rDeviceService\x12K\n" +
+	"\fRecordMetric\x12\x1b.iot.v1.RecordMetricRequest\x1a\x1c.iot.v1.RecordMetricResponse\"\x00\x12T\n" +
+	"\x0fConfigureDevice\x12\x1e.iot.v1.ConfigureDeviceRequest\x1a\x1f.iot.v1.ConfigureDeviceResponse\"\x00\x12T\n" +
+	"\x0fGetDeviceAlerts\x12\x1e.iot.v1.GetDeviceAlertsRequest\x1a\x1f.iot.v1.GetDeviceAlertsResponse\"\x00B\x8a\x01\n" +
 	"\n" +
 	"com.iot.v1B\fServiceProtoP\x01Z5github.com/joshjon/iot-metrics/proto/gen/iot/v1;iotv1\xa2\x02\x03IXX\xaa\x02\x06Iot.V1\xca\x02\x06Iot\\V1\xe2\x02\x12Iot\\V1\\GPBMetadata\xea\x02\aIot::V1b\x06proto3"
 

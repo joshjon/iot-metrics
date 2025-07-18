@@ -11,6 +11,7 @@ import (
 
 var _ iotv1connect.DeviceServiceHandler = (*ConnectHandler)(nil)
 
+// ConnectHandler is a Connect/gRPC based handler for the IoT Device Metrics API.
 type ConnectHandler struct {
 	svc *Service
 }
@@ -57,12 +58,20 @@ func (s *ConnectHandler) GetDeviceAlerts(
 	ctx context.Context,
 	req *connect.Request[iotv1.GetDeviceAlertsRequest],
 ) (*connect.Response[iotv1.GetDeviceAlertsResponse], error) {
-	res, err := s.svc.GetDeviceAlerts(ctx, GetDeviceAlertsRequest{
+	svcReq := GetDeviceAlertsRequest{
 		DeviceID:  req.Msg.DeviceId,
-		Timeframe: unmarshalTimeframe(req.Msg.Timeframe),
 		PageSize:  int(req.Msg.PageSize),
 		PageToken: req.Msg.PageToken,
-	})
+	}
+	if req.Msg.Timeframe != nil {
+		if req.Msg.Timeframe.Start != nil {
+			svcReq.TimeframeStart = ptr(req.Msg.Timeframe.Start.AsTime().UTC())
+		}
+		if req.Msg.Timeframe.End != nil {
+			svcReq.TimeframeEnd = ptr(req.Msg.Timeframe.End.AsTime().UTC())
+		}
+	}
+	res, err := s.svc.GetDeviceAlerts(ctx, svcReq)
 	if err != nil {
 		return nil, err
 	}
@@ -75,17 +84,4 @@ func (s *ConnectHandler) GetDeviceAlerts(
 		Alerts:        alertspb,
 		NextPageToken: res.NextPageToken,
 	}), nil
-}
-
-func unmarshalTimeframe(tfpb *iotv1.Timeframe) Timeframe {
-	timeframe := Timeframe{}
-	if tfpb != nil {
-		if tfpb.Start != nil {
-			timeframe.Start = ptr(tfpb.Start.AsTime().UTC())
-		}
-		if tfpb.End != nil {
-			timeframe.End = ptr(tfpb.End.AsTime().UTC())
-		}
-	}
-	return timeframe
 }

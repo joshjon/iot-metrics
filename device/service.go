@@ -17,6 +17,7 @@ const (
 	minBattery, maxBattery         = 0, 100
 )
 
+// Service handles business logic for devices.
 type Service struct {
 	repo   Repository
 	logger log.Logger
@@ -29,6 +30,7 @@ func NewService(repo Repository, logger log.Logger) *Service {
 	}
 }
 
+// ConfigureDevice validates and stores threshold configuration for a device.
 func (s *Service) ConfigureDevice(ctx context.Context, req ConfigureDeviceRequest) error {
 	if err := validateConfigureDeviceReq(req); err != nil {
 		return err
@@ -51,6 +53,8 @@ func (s *Service) ConfigureDevice(ctx context.Context, req ConfigureDeviceReques
 	return nil
 }
 
+// RecordMetric validates and saves a metric for a device, then evaluates it
+// against configured thresholds to determine if an alert should be triggered.
 func (s *Service) RecordMetric(ctx context.Context, req RecordMetricRequest) error {
 	if err := validateRecordMetricReq(req); err != nil {
 		return err
@@ -117,6 +121,7 @@ func (s *Service) RecordMetric(ctx context.Context, req RecordMetricRequest) err
 	return nil
 }
 
+// GetDeviceAlerts retrieves paginated alerts for a device.
 func (s *Service) GetDeviceAlerts(ctx context.Context, req GetDeviceAlertsRequest) (GetDeviceAlertsResponse, error) {
 	if err := validateGetDeviceAlertsReq(req); err != nil {
 		return GetDeviceAlertsResponse{}, err
@@ -137,7 +142,11 @@ func (s *Service) GetDeviceAlerts(ctx context.Context, req GetDeviceAlertsReques
 		pageTkn = &dec
 	}
 
-	page, err := s.repo.GetDeviceAlerts(ctx, req.DeviceID, req.Timeframe, RepositoryPageOptions{
+	timeframe := Timeframe{
+		Start: req.TimeframeStart,
+		End:   req.TimeframeEnd,
+	}
+	page, err := s.repo.GetDeviceAlerts(ctx, req.DeviceID, timeframe, RepositoryPageOptions{
 		Size:  req.PageSize,
 		Token: pageTkn,
 	})

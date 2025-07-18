@@ -13,6 +13,8 @@ type entry struct {
 	seen    time.Time
 }
 
+// RateLimiter enforces rate limits per key (e.g. device ID).
+// Inactive keys are garbage collected after the configured TTL.
 type RateLimiter struct {
 	mu       sync.Mutex
 	limiters map[string]*entry
@@ -23,7 +25,8 @@ type RateLimiter struct {
 	gcInterval time.Duration
 }
 
-func NewRateLimiter(limit rate.Limit, burst int, ttl, gcInterval time.Duration) *RateLimiter {
+// NewRateLimiter creates a new RateLimiter.
+func NewRateLimiter(limit rate.Limit, burst int, ttl time.Duration, gcInterval time.Duration) *RateLimiter {
 	m := &RateLimiter{
 		limiters:   make(map[string]*entry),
 		limit:      limit,
@@ -37,6 +40,8 @@ func NewRateLimiter(limit rate.Limit, burst int, ttl, gcInterval time.Duration) 
 	return m
 }
 
+// Wait blocks until a token is available for the given key or the context
+// is canceled.
 func (m *RateLimiter) Wait(ctx context.Context, key string) error {
 	getLimiter := func() *rate.Limiter {
 		m.mu.Lock()
@@ -59,6 +64,7 @@ func (m *RateLimiter) Wait(ctx context.Context, key string) error {
 	return getLimiter().Wait(ctx)
 }
 
+// startGC periodically removes inactive keys.
 func (m *RateLimiter) startGC() {
 	ticker := time.NewTicker(m.gcInterval)
 	defer ticker.Stop()

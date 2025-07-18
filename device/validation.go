@@ -34,16 +34,16 @@ func validateRecordMetricReq(req RecordMetricRequest) error {
 func validateGetDeviceAlertsReq(req GetDeviceAlertsRequest) error {
 	v := http.NewRequestValidator()
 	v.Field("device_id").When(isBlank(req.DeviceID)).Message("Must not be blank")
-	if req.Timeframe.Start != nil {
-		v.Field("timeframe.start").When(req.Timeframe.Start.IsZero()).Message("Must not be empty")
-		if req.Timeframe.End != nil {
+	if req.TimeframeStart != nil {
+		v.Field("timeframe.start").When(req.TimeframeStart.IsZero()).Message("Must not be empty")
+		if req.TimeframeEnd != nil {
 			v.Field("timeframe.start").
-				When(req.Timeframe.Start.After(*req.Timeframe.End)).
+				When(req.TimeframeStart.After(*req.TimeframeEnd)).
 				Message("Must be before timeframe.end")
 		}
 	}
-	if req.Timeframe.End != nil {
-		v.Field("timeframe.end").When(req.Timeframe.End.IsZero()).Message("Must not be empty")
+	if req.TimeframeEnd != nil {
+		v.Field("timeframe.end").When(req.TimeframeEnd.IsZero()).Message("Must not be empty")
 	}
 	return v.Error()
 }

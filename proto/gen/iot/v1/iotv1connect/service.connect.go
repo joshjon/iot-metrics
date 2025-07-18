@@ -78,7 +78,6 @@ func NewDeviceServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			httpClient,
 			baseURL+DeviceServiceGetDeviceAlertsProcedure,
 			connect.WithSchema(deviceServiceMethods.ByName("GetDeviceAlerts")),
-			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -136,7 +135,6 @@ func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOp
 		DeviceServiceGetDeviceAlertsProcedure,
 		svc.GetDeviceAlerts,
 		connect.WithSchema(deviceServiceMethods.ByName("GetDeviceAlerts")),
-		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/iot.v1.DeviceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// EchoHandler is a REST based handler for the IoT Device Metrics API.
 type EchoHandler struct {
 	svc *Service
 }
@@ -59,15 +60,16 @@ func (h *EchoHandler) RecordMetric(c echo.Context) error {
 }
 
 type GetDeviceAlertsRequest struct {
-	DeviceID  string    `param:"device_id" json:"-"`
-	Timeframe Timeframe `query:"timeframe" json:"-"`
-	PageSize  int       `query:"page_size" json:"-"`
-	PageToken string    `query:"page_token" json:"-"`
+	DeviceID       string     `param:"device_id" json:"-"`
+	TimeframeStart *time.Time `query:"timeframe.start" json:"-"`
+	TimeframeEnd   *time.Time `query:"timeframe.end" json:"-"`
+	PageSize       int        `query:"page.size" json:"-"`
+	PageToken      string     `query:"page.token" json:"-"`
 }
 
 type GetDeviceAlertsResponse struct {
 	Alerts        []Alert `json:"alerts"`
-	NextPageToken string  `json:"next_page_cursor,omitempty"`
+	NextPageToken string  `json:"next_page_token,omitempty"`
 }
 
 func (h *EchoHandler) GetDeviceAlerts(c echo.Context) error {

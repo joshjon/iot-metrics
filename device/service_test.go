@@ -283,12 +283,10 @@ func TestHandler_GetDeviceAlerts(t *testing.T) {
 	}
 
 	req := GetDeviceAlertsRequest{
-		DeviceID: "foo",
-		Timeframe: Timeframe{
-			Start: wantTimeframe.Start,
-			End:   wantTimeframe.End,
-		},
-		PageSize: 10,
+		DeviceID:       "foo",
+		TimeframeStart: wantTimeframe.Start,
+		TimeframeEnd:   wantTimeframe.End,
+		PageSize:       10,
 	}
 	ptkn := RepositoryPageToken{
 		LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
@@ -352,22 +350,22 @@ func TestHandler_GetDeviceAlerts_requestValidation(t *testing.T) {
 			name:      "Timeframe start is empty",
 			fieldName: "timeframe.start",
 			override: func(req *GetDeviceAlertsRequest) {
-				req.Timeframe.Start = &time.Time{}
+				req.TimeframeStart = &time.Time{}
 			},
 		},
 		{
 			name:      "Timeframe end is empty",
 			fieldName: "timeframe.end",
 			override: func(req *GetDeviceAlertsRequest) {
-				req.Timeframe.End = &time.Time{}
+				req.TimeframeEnd = &time.Time{}
 			},
 		},
 		{
 			name:      "Timeframe start is after end",
 			fieldName: "timeframe.start",
 			override: func(req *GetDeviceAlertsRequest) {
-				req.Timeframe.Start = ptr(time.Now().UTC())
-				req.Timeframe.End = ptr(time.Now().Add(-time.Minute).UTC())
+				req.TimeframeStart = ptr(time.Now().UTC())
+				req.TimeframeEnd = ptr(time.Now().Add(-time.Minute).UTC())
 			},
 		},
 	}
@@ -377,12 +375,10 @@ func TestHandler_GetDeviceAlerts_requestValidation(t *testing.T) {
 			ctx := t.Context()
 
 			req := GetDeviceAlertsRequest{
-				DeviceID: "foo",
-				Timeframe: Timeframe{
-					Start: ptr(time.Now().Add(-time.Minute).UTC()),
-					End:   ptr(time.Now().UTC()),
-				},
-				PageSize: 10,
+				DeviceID:       "foo",
+				TimeframeStart: ptr(time.Now().Add(-time.Minute).UTC()),
+				TimeframeEnd:   ptr(time.Now().UTC()),
+				PageSize:       10,
 			}
 			reqTkn, err := encodePageToken(RepositoryPageToken{
 				LastTime: ptr(time.Now().Add(-10 * time.Second).UTC()),
