@@ -12,9 +12,10 @@ import (
 )
 
 type Config struct {
-	Logger    Logger `yaml:"logger" envPrefix:"LOGGER_"`
-	Port      int    `yaml:"port" env:"PORT"`            // default: 8080
-	SQLiteDir string `yaml:"sqliteDir" env:"SQLITE_DIR"` // default: ./data/
+	Logger          Logger     `yaml:"logger" envPrefix:"LOGGER_"`
+	Port            int        `yaml:"port" env:"PORT"`            // default: 8080
+	SQLiteDir       string     `yaml:"sqliteDir" env:"SQLITE_DIR"` // default: ./data/
+	DeviceRateLimit *RateLimit `yaml:"deviceRateLimit" envPrefix:"DEVICE_RATE_LIMIT_"`
 }
 
 func (c Config) Validate() []error {
@@ -24,6 +25,14 @@ func (c Config) Validate() []error {
 	}
 	if c.Port < 1 && c.Port > 65535 {
 		errs = append(errs, errors.New("port: must be between 1 and 65535"))
+	}
+	if c.DeviceRateLimit != nil {
+		if c.DeviceRateLimit.Tokens <= 0 {
+			errs = append(errs, errors.New("deviceRateLimit.tokens: must be greater than 0"))
+		}
+		if c.DeviceRateLimit.Seconds <= 0 {
+			errs = append(errs, errors.New("deviceRateLimit.seconds: must be greater than 0"))
+		}
 	}
 	return errs
 }

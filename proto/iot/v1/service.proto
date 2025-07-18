@@ -55,14 +55,6 @@ message GetDeviceAlertsResponse {
   string next_page_token = 2;
 }
 
-message PageToken {
-  int64 offset_id = 1;
-  google.protobuf.Timestamp offset_time = 2;
-
-  string device_id = 3;
-  optional Timeframe timeframe = 4;
-}
-
 message Timeframe {
   optional google.protobuf.Timestamp start = 1;
   optional google.protobuf.Timestamp end = 2;

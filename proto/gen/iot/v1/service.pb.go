@@ -69,7 +69,7 @@ func (x Alert_Reason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Alert_Reason.Descriptor instead.
 func (Alert_Reason) EnumDescriptor() ([]byte, []int) {
-	return file_iot_v1_service_proto_rawDescGZIP(), []int{8, 0}
+	return file_iot_v1_service_proto_rawDescGZIP(), []int{7, 0}
 }
 
 type RecordMetricRequest struct {
@@ -392,74 +392,6 @@ func (x *GetDeviceAlertsResponse) GetNextPageToken() string {
 	return ""
 }
 
-type PageToken struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OffsetId      int64                  `protobuf:"varint,1,opt,name=offset_id,json=offsetId,proto3" json:"offset_id,omitempty"`
-	OffsetTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=offset_time,json=offsetTime,proto3" json:"offset_time,omitempty"`
-	DeviceId      string                 `protobuf:"bytes,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
-	Timeframe     *Timeframe             `protobuf:"bytes,4,opt,name=timeframe,proto3,oneof" json:"timeframe,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageToken) Reset() {
-	*x = PageToken{}
-	mi := &file_iot_v1_service_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageToken) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageToken) ProtoMessage() {}
-
-func (x *PageToken) ProtoReflect() protoreflect.Message {
-	mi := &file_iot_v1_service_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageToken.ProtoReflect.Descriptor instead.
-func (*PageToken) Descriptor() ([]byte, []int) {
-	return file_iot_v1_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *PageToken) GetOffsetId() int64 {
-	if x != nil {
-		return x.OffsetId
-	}
-	return 0
-}
-
-func (x *PageToken) GetOffsetTime() *timestamppb.Timestamp {
-	if x != nil {
-		return x.OffsetTime
-	}
-	return nil
-}
-
-func (x *PageToken) GetDeviceId() string {
-	if x != nil {
-		return x.DeviceId
-	}
-	return ""
-}
-
-func (x *PageToken) GetTimeframe() *Timeframe {
-	if x != nil {
-		return x.Timeframe
-	}
-	return nil
-}
-
 type Timeframe struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Start         *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3,oneof" json:"start,omitempty"`
@@ -470,7 +402,7 @@ type Timeframe struct {
 
 func (x *Timeframe) Reset() {
 	*x = Timeframe{}
-	mi := &file_iot_v1_service_proto_msgTypes[7]
+	mi := &file_iot_v1_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -482,7 +414,7 @@ func (x *Timeframe) String() string {
 func (*Timeframe) ProtoMessage() {}
 
 func (x *Timeframe) ProtoReflect() protoreflect.Message {
-	mi := &file_iot_v1_service_proto_msgTypes[7]
+	mi := &file_iot_v1_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -495,7 +427,7 @@ func (x *Timeframe) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Timeframe.ProtoReflect.Descriptor instead.
 func (*Timeframe) Descriptor() ([]byte, []int) {
-	return file_iot_v1_service_proto_rawDescGZIP(), []int{7}
+	return file_iot_v1_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Timeframe) GetStart() *timestamppb.Timestamp {
@@ -523,7 +455,7 @@ type Alert struct {
 
 func (x *Alert) Reset() {
 	*x = Alert{}
-	mi := &file_iot_v1_service_proto_msgTypes[8]
+	mi := &file_iot_v1_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -535,7 +467,7 @@ func (x *Alert) String() string {
 func (*Alert) ProtoMessage() {}
 
 func (x *Alert) ProtoReflect() protoreflect.Message {
-	mi := &file_iot_v1_service_proto_msgTypes[8]
+	mi := &file_iot_v1_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -548,7 +480,7 @@ func (x *Alert) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Alert.ProtoReflect.Descriptor instead.
 func (*Alert) Descriptor() ([]byte, []int) {
-	return file_iot_v1_service_proto_rawDescGZIP(), []int{8}
+	return file_iot_v1_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Alert) GetTimestamp() *timestamppb.Timestamp {
@@ -598,15 +530,7 @@ const file_iot_v1_service_proto_rawDesc = "" +
 	"_timeframe\"h\n" +
 	"\x17GetDeviceAlertsResponse\x12%\n" +
 	"\x06alerts\x18\x01 \x03(\v2\r.iot.v1.AlertR\x06alerts\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xc6\x01\n" +
-	"\tPageToken\x12\x1b\n" +
-	"\toffset_id\x18\x01 \x01(\x03R\boffsetId\x12;\n" +
-	"\voffset_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"offsetTime\x12\x1b\n" +
-	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\x124\n" +
-	"\ttimeframe\x18\x04 \x01(\v2\x11.iot.v1.TimeframeH\x00R\ttimeframe\x88\x01\x01B\f\n" +
-	"\n" +
-	"_timeframe\"\x87\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x87\x01\n" +
 	"\tTimeframe\x125\n" +
 	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\x05start\x88\x01\x01\x121\n" +
 	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x03end\x88\x01\x01B\b\n" +
@@ -640,7 +564,7 @@ func file_iot_v1_service_proto_rawDescGZIP() []byte {
 }
 
 var file_iot_v1_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_iot_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_iot_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_iot_v1_service_proto_goTypes = []any{
 	(Alert_Reason)(0),               // 0: iot.v1.Alert.Reason
 	(*RecordMetricRequest)(nil),     // 1: iot.v1.RecordMetricRequest
@@ -649,32 +573,29 @@ var file_iot_v1_service_proto_goTypes = []any{
 	(*ConfigureDeviceResponse)(nil), // 4: iot.v1.ConfigureDeviceResponse
 	(*GetDeviceAlertsRequest)(nil),  // 5: iot.v1.GetDeviceAlertsRequest
 	(*GetDeviceAlertsResponse)(nil), // 6: iot.v1.GetDeviceAlertsResponse
-	(*PageToken)(nil),               // 7: iot.v1.PageToken
-	(*Timeframe)(nil),               // 8: iot.v1.Timeframe
-	(*Alert)(nil),                   // 9: iot.v1.Alert
-	(*timestamppb.Timestamp)(nil),   // 10: google.protobuf.Timestamp
+	(*Timeframe)(nil),               // 7: iot.v1.Timeframe
+	(*Alert)(nil),                   // 8: iot.v1.Alert
+	(*timestamppb.Timestamp)(nil),   // 9: google.protobuf.Timestamp
 }
 var file_iot_v1_service_proto_depIdxs = []int32{
-	10, // 0: iot.v1.RecordMetricRequest.timestamp:type_name -> google.protobuf.Timestamp
-	8,  // 1: iot.v1.GetDeviceAlertsRequest.timeframe:type_name -> iot.v1.Timeframe
-	9,  // 2: iot.v1.GetDeviceAlertsResponse.alerts:type_name -> iot.v1.Alert
-	10, // 3: iot.v1.PageToken.offset_time:type_name -> google.protobuf.Timestamp
-	8,  // 4: iot.v1.PageToken.timeframe:type_name -> iot.v1.Timeframe
-	10, // 5: iot.v1.Timeframe.start:type_name -> google.protobuf.Timestamp
-	10, // 6: iot.v1.Timeframe.end:type_name -> google.protobuf.Timestamp
-	10, // 7: iot.v1.Alert.timestamp:type_name -> google.protobuf.Timestamp
-	0,  // 8: iot.v1.Alert.reason:type_name -> iot.v1.Alert.Reason
-	1,  // 9: iot.v1.DeviceService.RecordMetric:input_type -> iot.v1.RecordMetricRequest
-	3,  // 10: iot.v1.DeviceService.ConfigureDevice:input_type -> iot.v1.ConfigureDeviceRequest
-	5,  // 11: iot.v1.DeviceService.GetDeviceAlerts:input_type -> iot.v1.GetDeviceAlertsRequest
-	2,  // 12: iot.v1.DeviceService.RecordMetric:output_type -> iot.v1.RecordMetricResponse
-	4,  // 13: iot.v1.DeviceService.ConfigureDevice:output_type -> iot.v1.ConfigureDeviceResponse
-	6,  // 14: iot.v1.DeviceService.GetDeviceAlerts:output_type -> iot.v1.GetDeviceAlertsResponse
-	12, // [12:15] is the sub-list for method output_type
-	9,  // [9:12] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	9,  // 0: iot.v1.RecordMetricRequest.timestamp:type_name -> google.protobuf.Timestamp
+	7,  // 1: iot.v1.GetDeviceAlertsRequest.timeframe:type_name -> iot.v1.Timeframe
+	8,  // 2: iot.v1.GetDeviceAlertsResponse.alerts:type_name -> iot.v1.Alert
+	9,  // 3: iot.v1.Timeframe.start:type_name -> google.protobuf.Timestamp
+	9,  // 4: iot.v1.Timeframe.end:type_name -> google.protobuf.Timestamp
+	9,  // 5: iot.v1.Alert.timestamp:type_name -> google.protobuf.Timestamp
+	0,  // 6: iot.v1.Alert.reason:type_name -> iot.v1.Alert.Reason
+	1,  // 7: iot.v1.DeviceService.RecordMetric:input_type -> iot.v1.RecordMetricRequest
+	3,  // 8: iot.v1.DeviceService.ConfigureDevice:input_type -> iot.v1.ConfigureDeviceRequest
+	5,  // 9: iot.v1.DeviceService.GetDeviceAlerts:input_type -> iot.v1.GetDeviceAlertsRequest
+	2,  // 10: iot.v1.DeviceService.RecordMetric:output_type -> iot.v1.RecordMetricResponse
+	4,  // 11: iot.v1.DeviceService.ConfigureDevice:output_type -> iot.v1.ConfigureDeviceResponse
+	6,  // 12: iot.v1.DeviceService.GetDeviceAlerts:output_type -> iot.v1.GetDeviceAlertsResponse
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_iot_v1_service_proto_init() }
@@ -684,14 +605,13 @@ func file_iot_v1_service_proto_init() {
 	}
 	file_iot_v1_service_proto_msgTypes[4].OneofWrappers = []any{}
 	file_iot_v1_service_proto_msgTypes[6].OneofWrappers = []any{}
-	file_iot_v1_service_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_iot_v1_service_proto_rawDesc), len(file_iot_v1_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

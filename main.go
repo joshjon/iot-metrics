@@ -6,15 +6,19 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 
 	"connectrpc.com/connect"
+	"github.com/labstack/echo/v4"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/time/rate"
 
 	"github.com/joshjon/iot-metrics/config"
 	"github.com/joshjon/iot-metrics/device"
+	"github.com/joshjon/iot-metrics/http"
 	"github.com/joshjon/iot-metrics/log"
 	"github.com/joshjon/iot-metrics/proto/gen/iot/v1/iotv1connect"
-	"github.com/joshjon/iot-metrics/rpc"
+	"github.com/joshjon/iot-metrics/rlimit"
 	"github.com/joshjon/iot-metrics/sqlite"
 	"github.com/joshjon/iot-metrics/sqlite/migrations"
 )
@@ -79,16 +83,32 @@ func run(c *cli.Context) error {
 	logger.Info("migrated sqlite database")
 	repo := sqlite.NewDeviceRepository(db)
 
+	middleware := []echo.MiddlewareFunc{http.NewEchoErrorMiddleware(), http.NewEchoLogMiddleware(logger)}
+	interceptors := []connect.Interceptor{http.NewConnectErrorInterceptor(), http.NewConnectLogInterceptor(logger)}
+
+	if cfg.DeviceRateLimit != nil {
+		rl := cfg.DeviceRateLimit
+		limit := rate.Every(time.Duration(rl.Tokens / rl.Seconds))
+		burst := min(rl.Tokens, 50)
+		rateLimiter := rlimit.NewRateLimiter(limit, burst, 5*time.Minute, time.Minute)
+		middleware = append(middleware, http.NewEchoRateLimiterMiddleware(rateLimiter, device.EchoRequestDeviceIDGetter))
+		interceptors = append(interceptors, http.NewConnectRateLimitInterceptor(rateLimiter, device.ConnectRequestDeviceIDGetter))
+		logger.Info("device rate limiter enabled")
+	}
+
+	svc := device.NewService(repo, logger)
+
 	hostPort := ":" + strconv.Itoa(cfg.Port)
-	srv := rpc.NewServer(hostPort)
-	srv.Register(
-		iotv1connect.NewDeviceServiceHandler(device.NewHandler(repo, logger),
-			rpc.WithRecover(logger),
-			connect.WithInterceptors(
-				rpc.NewLogInterceptor(logger),
-			),
-		),
-	)
+	srv := http.NewServer(hostPort)
+
+	restHandler := device.NewEchoHandler(svc)
+	srv.RegisterEcho(restHandler, middleware...)
+
+	rpcHandler := device.NewConnectHandler(svc)
+	srv.RegisterConnect(iotv1connect.NewDeviceServiceHandler(rpcHandler,
+		http.WithConnectRecover(logger),
+		connect.WithInterceptors(interceptors...),
+	))
 
 	errs := make(chan error)
 

@@ -47,6 +47,10 @@ func Open(ctx context.Context, opts ...OpenOption) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Set max connections to 1 since sqlite only supports a single writer at a
+	// time. Since this also affects reads, a future improvement would be to
+	// create a separate reader DB instance with uncapped connections.
+	db.SetMaxOpenConns(1)
 
 	if _, err = db.Exec("PRAGMA foreign_keys = on;"); err != nil {
 		return nil, fmt.Errorf("enable foreign keys: %w", err)

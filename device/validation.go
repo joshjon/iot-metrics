@@ -3,47 +3,47 @@ package device
 import (
 	"strings"
 
-	iotv1 "github.com/joshjon/iot-metrics/proto/gen/iot/v1"
-	"github.com/joshjon/iot-metrics/rpc"
+	"github.com/joshjon/iot-metrics/http"
 )
 
-func validateConfigureDeviceReq(msg *iotv1.ConfigureDeviceRequest) error {
-	v := rpc.NewRequestValidator()
-	v.Field("device_id").When(isBlank(msg.DeviceId)).Message("Must not be blank")
+func validateConfigureDeviceReq(req ConfigureDeviceRequest) error {
+	v := http.NewRequestValidator()
+	v.Field("device_id").When(isBlank(req.DeviceID)).Message("Must not be blank")
 	v.Field("temperature_threshold").
-		When(msg.TemperatureThreshold < minTemperature || msg.TemperatureThreshold > maxTemperature).
+		When(req.TemperatureThreshold < minTemperature || req.TemperatureThreshold > maxTemperature).
 		Messagef("Must be between %.2f and %.2f", minTemperature, maxTemperature)
 	v.Field("battery_threshold").
-		When(msg.BatteryThreshold < minBattery || msg.BatteryThreshold > maxBattery).
+		When(req.BatteryThreshold < minBattery || req.BatteryThreshold > maxBattery).
 		Messagef("Must be between %d and %d", minBattery, maxBattery)
 	return v.Error()
 }
 
-func validateRecordMetricReq(msg *iotv1.RecordMetricRequest) error {
-	v := rpc.NewRequestValidator()
-	v.Field("device_id").When(isBlank(msg.DeviceId)).Message("Must not be blank")
-	v.Field("timestamp").
-		When(msg.Timestamp == nil || (msg.Timestamp.Seconds+int64(msg.Timestamp.Nanos) == 0)).
-		Message("Must not be empty")
+func validateRecordMetricReq(req RecordMetricRequest) error {
+	v := http.NewRequestValidator()
+	v.Field("device_id").When(isBlank(req.DeviceID)).Message("Must not be blank")
+	v.Field("timestamp").When(req.Timestamp.IsZero()).Message("Must not be empty")
 	v.Field("temperature").
-		When(msg.Temperature < minTemperature || msg.Temperature > maxTemperature).
+		When(req.Temperature < minTemperature || req.Temperature > maxTemperature).
 		Messagef("Must be between %.2f and %.2f", minTemperature, maxTemperature)
 	v.Field("battery").
-		When(msg.Battery < minBattery || msg.Battery > maxBattery).
+		When(req.Battery < minBattery || req.Battery > maxBattery).
 		Messagef("Must be between %d and %d", minBattery, maxBattery)
 	return v.Error()
 }
 
-func validateGetDeviceAlertsReq(msg *iotv1.GetDeviceAlertsRequest) error {
-	v := rpc.NewRequestValidator()
-	v.Field("device_id").When(isBlank(msg.DeviceId)).Message("Must not be blank")
-	if msg.Timeframe != nil {
-		v.Field("timeframe.start").
-			When(msg.Timeframe.Start != nil && !msg.Timeframe.Start.IsValid()).
-			Message("Invalid timestamp")
-		v.Field("timeframe.end").
-			When(msg.Timeframe.End != nil && !msg.Timeframe.End.IsValid()).
-			Message("Invalid timestamp")
+func validateGetDeviceAlertsReq(req GetDeviceAlertsRequest) error {
+	v := http.NewRequestValidator()
+	v.Field("device_id").When(isBlank(req.DeviceID)).Message("Must not be blank")
+	if req.Timeframe.Start != nil {
+		v.Field("timeframe.start").When(req.Timeframe.Start.IsZero()).Message("Must not be empty")
+		if req.Timeframe.End != nil {
+			v.Field("timeframe.start").
+				When(req.Timeframe.Start.After(*req.Timeframe.End)).
+				Message("Must be before timeframe.end")
+		}
+	}
+	if req.Timeframe.End != nil {
+		v.Field("timeframe.end").When(req.Timeframe.End.IsZero()).Message("Must not be empty")
 	}
 	return v.Error()
 }

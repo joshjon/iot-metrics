@@ -1,12 +1,7 @@
-package rpc
+package http
 
 import (
-	"errors"
 	"fmt"
-	"strings"
-
-	"connectrpc.com/connect"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
 // RequestValidator validates RPC requests.
@@ -34,28 +29,7 @@ func (v *RequestValidator) Error() error {
 	if len(v.fieldViolations) == 0 {
 		return nil
 	}
-
-	cErr := connect.NewError(connect.CodeInvalidArgument, errors.New("bad request"))
-
-	badReq := &errdetails.BadRequest{
-		FieldViolations: []*errdetails.BadRequest_FieldViolation{},
-	}
-
-	for field, messages := range v.fieldViolations {
-		badReq.FieldViolations = append(badReq.FieldViolations, &errdetails.BadRequest_FieldViolation{
-			Field:       field,
-			Description: strings.Join(messages, ", "),
-		})
-	}
-
-	detail, err := connect.NewErrorDetail(badReq)
-	if err != nil {
-		return cErr
-	}
-
-	cErr.AddDetail(detail)
-
-	return cErr
+	return &BadRequestError{FieldViolations: v.fieldViolations}
 }
 
 type FieldValidator struct {
