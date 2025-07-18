@@ -30,7 +30,7 @@ func TestDeviceRepository_UpsertGetDeviceConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, cfg, gotCfg)
 
-	gotCfg, err = repo.GetDeviceConfig(ctx, "not_exists")
+	_, err = repo.GetDeviceConfig(ctx, "not_exists")
 	require.ErrorIs(t, err, device.ErrRepoItemNotFound)
 }
 
@@ -52,9 +52,10 @@ func TestDeviceRepository_SaveGetDeviceMetrics(t *testing.T) {
 			Time:        middle,
 		}
 		// first and last outside timeframe
-		if i == 0 {
+		switch i {
+		case 0:
 			metric.Time = start.Add(-time.Second)
-		} else if i == count-1 {
+		case count - 1:
 			metric.Time = end.Add(time.Second)
 		}
 		err := repo.SaveDeviceMetric(ctx, deviceID, metric)
@@ -112,9 +113,10 @@ func TestDeviceRepository_SaveGetDeviceAlerts(t *testing.T) {
 			Time:   middle,
 		}
 		// first and last outside timeframe
-		if i == 0 {
+		switch i {
+		case 0:
 			alert.Time = start.Add(-time.Second)
-		} else if i == count-1 {
+		case count - 1:
 			alert.Time = end.Add(time.Second)
 		}
 		err := repo.SaveDeviceAlert(ctx, deviceID, alert)

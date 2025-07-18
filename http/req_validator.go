@@ -35,7 +35,6 @@ func (v *RequestValidator) Error() error {
 type FieldValidator struct {
 	validator *RequestValidator
 	field     string
-	condition bool
 }
 
 // When sets the condition for the field.

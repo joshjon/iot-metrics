@@ -69,7 +69,7 @@ func Load(configFile string) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("open config file at path '%s': %w", configFile, err)
 		}
-		defer file.Close()
+		defer file.Close() //nolint:errcheck
 		decoder := yaml.NewDecoder(file)
 		if err = decoder.Decode(&cfg); err != nil {
 			return nil, fmt.Errorf("decode config file at path '%s': %w", configFile, err)
@@ -88,7 +88,7 @@ func Load(configFile string) (*Config, error) {
 				fmt.Fprintln(os.Stderr, "  "+verr.Error())
 			}
 		}
-		fmt.Fprintln(os.Stdout)
+		fmt.Fprintln(os.Stdout) //nolint:errcheck
 		os.Exit(1)
 	}
 

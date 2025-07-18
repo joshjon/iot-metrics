@@ -17,7 +17,7 @@ func Migrate(db *sql.DB, fsys fs.FS) error {
 	if err != nil {
 		return fmt.Errorf("open migrations fs: %w", err)
 	}
-	defer sd.Close()
+	defer sd.Close() //nolint:errcheck
 
 	driver, err := sqlite.WithInstance(db, new(sqlite.Config))
 	if err != nil {
