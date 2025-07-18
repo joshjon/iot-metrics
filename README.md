@@ -14,11 +14,12 @@ An IoT metrics service exposing both REST and gRPC APIs on port 8080 (default).
 
 #### Handlers
 
-- REST and gRPC handlers are implemented separately to align with the assignment requirements.
+- REST and gRPC handlers are implemented separately.
   - 💡️ While I could have unified them under a single Connect handler and used
     [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway)
-    or [Vanguard](https://github.com/connectrpc/vanguard-go) for REST to gRPC transcoding, I chose not to, as that
-    would go against the intent of the assignment.
+    or [Vanguard](https://github.com/connectrpc/vanguard-go) to handle REST ↔ gRPC transcoding, I kept them separate to honor the assignment’s requirements.
+- Each handler validates incoming requests and returns standardized, structured
+  error responses.
 
 #### Data store
 
@@ -27,20 +28,23 @@ An IoT metrics service exposing both REST and gRPC APIs on port 8080 (default).
 
 #### Logging
 
-- Requests are automatically logged via middleware. In addition, dedicated logs are recorded for:
+- Requests are automatically logged via middleware. 
+- In addition, dedicated logs are captured for:
   - Device configuration updates
   - Recorded device metrics
   - Triggered alerts
 
 #### Alerting
 
-- Alerts are triggered synchronously within the `POST /devices/:device_id/metrics` handler. After a metric is recorded,
-  thresholds are checked and an alert is triggered if any are breached.
+- After a metric is recorded, thresholds are checked and an alert is triggered if any are breached.
+- Alerts are triggered synchronously within the `POST /devices/:device_id/metrics` handler.
   - 💡️ For improved performance, alerting could be moved to an asynchronous background task, but this was omitted to
     keep
     the solution simple.
 
 ## Running
+
+Configure the app using `config.yaml`.
 
 ### Go (1.24)
 
@@ -88,7 +92,7 @@ Configures device thresholds, replacing any existing configuration (upsert).
   curl -i -X POST http://localhost:8080/devices/d-123/config \
       -H "Content-Type: application/json" \
       -d '{
-        "temperature_threshold": 45.85,
+        "temperature_threshold": 30.85,
         "battery_threshold": 20
       }'
   ```
@@ -99,7 +103,7 @@ Configures device thresholds, replacing any existing configuration (upsert).
   grpcurl -plaintext \
       -d '{
         "device_id":             "d-123",
-        "temperature_threshold": 45.85,
+        "temperature_threshold": 30.85,
         "battery_threshold":     20
       }' \
       localhost:8080 iot.v1.DeviceService/ConfigureDevice
@@ -116,7 +120,7 @@ Records a device metric and triggers an alert if it breaches configured threshol
       -H "Content-Type: application/json" \
       -d '{
         "timestamp":  "2025-07-17T12:00:00Z",
-        "temperature": 30.50,
+        "temperature": 40.50,
         "battery":     10
       }'
   ```
@@ -128,7 +132,7 @@ Records a device metric and triggers an alert if it breaches configured threshol
       -d '{
         "device_id":  "d-123",
         "timestamp":  "2025-07-17T12:00:00Z",
-        "temperature": 30.50,
+        "temperature": 40.50,
         "battery":     10
       }' \
       localhost:8080 iot.v1.DeviceService/RecordMetric
@@ -149,11 +153,10 @@ Retrieves recent device alerts with support for timeframe filtering and cursor b
     | `page.token`      | `eyJMYXN0VGltZSI6IjIwMjUtMDQtMjVUMTI6MDA6MDBaIiwiTGFzdElEIjoxMTg5M30` |
 
   ```shell
-  curl -i http://localhost:8080/devices/d-123/alerts? \
-      timeframe.start=2025-07-16T12:00:00Z& \
-      timeframe.end=2025-07-18T12:00:00Z& \
-      page.size=5 \
-    -H "Accept: application/json"
+  curl -i -H "Accept: application/json" "http://localhost:8080/devices/d-123/alerts?"\
+  "timeframe.start=2025-07-16T12:00:00Z&"\
+  "timeframe.end=2025-07-18T12:00:00Z&"\
+  "page.size=5"
   ```
 
 - **gRPC:** `iot.v1.DeviceService/GetDeviceAlerts`
@@ -166,8 +169,8 @@ Retrieves recent device alerts with support for timeframe filtering and cursor b
         "start": "2025-07-16T12:00:00Z",
         "end":   "2025-07-18T12:00:00Z"
       },
-      "page.size":  5,
-      "page.token": ""
+      "page_size":  5,
+      "page_token": ""
     }' \
     localhost:8080 iot.v1.DeviceService/GetDeviceAlerts
   ```
@@ -177,6 +180,33 @@ Retrieves recent device alerts with support for timeframe filtering and cursor b
 ### Device rate limiting
 
 - Device level rate limiting is enabled by default (5 requests every second).
-- It can be disabled by uncommenting the `deviceRateLimit` section in `config.yaml`.
+- It can be disabled by commenting the `deviceRateLimit` section in `config.yaml`.
 - The rate limiter is implemented as a middleware and allows each device to make up to `deviceRateLimit.tokens`
 requests per `deviceRateLimit.seconds` seconds, across all APIs.
+
+### Simulate 1000+ concurrent devices
+
+The `stress` CLI tool in `cmd/stress/` can be used to start a configurable worker pool that concurrently sends
+`RecordMetric` requests for `n` randomly generated devices.
+
+Requests are made on startup to configure each device with the following thresholds:
+
+- Temperature threshold: `50.00`
+- Battery threshold: `50`
+
+For each recorded metric, temperature and battery values `v` are randomly generated such that `0` <= `v` <=
+`threshold * 2`.
+
+This means there is a 50% chance that a recorded value will exceed its threshold, triggering an alert.
+
+Run the command below for usage instructions (requires Go >= 1.24):
+
+````shell
+go run ./cmd/stress --help
+````
+
+Example for 1000 devices concurrently recording metrics at 100ms intervals:
+
+```shell
+go run ./cmd/stress --devices 1000 --interval 100
+```

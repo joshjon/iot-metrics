@@ -14,8 +14,12 @@ docker-build:
 	docker build -t local/iot-metrics .
 
 .PHONY: docker-run
+docker-run: SQLITE_DIR=/etc/app/data
 docker-run:
-	docker run --rm -v "$$(pwd)/config.yaml":/etc/app/config.yaml -p 8080:8080 \
+	docker run --rm -p 8080:8080 \
+		-v "$$(pwd)/config.yaml":/etc/app/config.yaml \
+		-v "$$(pwd)/data/:$(SQLITE_DIR)" \
+		-e SQLITE_DIR=$(SQLITE_DIR) \
 		--name iot-metrics local/iot-metrics \
 		--config-file=/etc/app/config.yaml
 

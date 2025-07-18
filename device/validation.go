@@ -45,6 +45,7 @@ func validateGetDeviceAlertsReq(req GetDeviceAlertsRequest) error {
 	if req.TimeframeEnd != nil {
 		v.Field("timeframe.end").When(req.TimeframeEnd.IsZero()).Message("Must not be empty")
 	}
+	v.Field("page.size").When(req.PageSize < 0).Message("Must be greater than 0")
 	return v.Error()
 }
 

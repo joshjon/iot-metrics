@@ -2,7 +2,7 @@ logger:
   level: info
   structured: false
 port: 8080
-sqliteDir: ./data/
+sqliteDir: ./data/ # overridden by env var if using `make docker-run`
 # Comment below to disable per device rate limiting
 deviceRateLimit:
   # 5 requests every second
