@@ -88,7 +88,7 @@ func run(c *cli.Context) error {
 
 	if cfg.DeviceRateLimit != nil {
 		rl := cfg.DeviceRateLimit
-		limit := rate.Every(time.Duration(rl.Tokens / rl.Seconds))
+		limit := rate.Limit(float64(rl.Tokens) / float64(rl.Seconds))
 		burst := min(rl.Tokens, 50)
 		rateLimiter := rlimit.NewRateLimiter(limit, burst, 5*time.Minute, time.Minute)
 		middleware = append(middleware, http.NewEchoRateLimiterMiddleware(rateLimiter, device.EchoRequestDeviceIDGetter))

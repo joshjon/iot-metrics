@@ -124,7 +124,7 @@ func TestDeviceRepository_SaveGetDeviceAlerts(t *testing.T) {
 		saved[i] = alert
 	}
 
-	// expect metrics without first and last
+	// expect alerts without first and last
 	wantItems := saved[1 : len(saved)-1]
 
 	size := 5

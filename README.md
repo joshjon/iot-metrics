@@ -179,8 +179,8 @@ Retrieves recent device alerts with support for timeframe filtering and cursor b
 
 ### Device rate limiting
 
-- Device level rate limiting is enabled by default (5 requests every second).
-- It can be disabled by commenting the `deviceRateLimit` section in `config.yaml`.
+- Device level rate limiting is enabled via `config.yaml` (currently 5 requests every second).
+- It can be disabled by commenting out the `deviceRateLimit` section in `config.yaml`.
 - The rate limiter is implemented as a middleware and allows each device to make up to `deviceRateLimit.tokens`
 requests per `deviceRateLimit.seconds` seconds, across all APIs.
 

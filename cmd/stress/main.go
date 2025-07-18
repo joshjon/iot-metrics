@@ -198,7 +198,7 @@ func parseFlags(c *cli.Context) flags {
 		for _, ferr := range flagErrs {
 			fmt.Fprintln(os.Stderr, "  "+ferr)
 		}
-		fmt.Fprintln(os.Stdout)
+		fmt.Fprintln(os.Stdout) //nolint:errcheck
 		cli.ShowAppHelpAndExit(c, 1)
 	}
 
