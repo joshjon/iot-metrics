@@ -6,5 +6,5 @@ sqliteDir: ./data/ # overridden by env var if using `make docker-run`
 # Comment below to disable per device rate limiting
 deviceRateLimit:
   # 5 requests every second
-  tokens: 3
+  tokens: 5
   seconds: 1
